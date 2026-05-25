@@ -316,8 +316,7 @@
   const SHEET_ID = "1RsdKEMc6XaiF6axx0zD7ZIaKla_AcI7niRPbn2XgBmg";
   const SHEET_NAME = "업무현황";
 
-  // 최우선 목표 — 직접 수정하세요
-  const GOAL_TEXT = "";
+  const GOAL_SHEET = "목표";
 
   const TEAM_COLORS = {
     "총무":     "#4299e1",
@@ -331,11 +330,33 @@
   const TEAM_ORDER = ["총무","상담","교육","시설","리셉션","원장직접"];
   // ───────────────────────────────────────────────────────────────
 
-  function setGoal() {
-    const el = document.getElementById("goalText");
-    if (GOAL_TEXT.trim()) {
-      el.textContent = GOAL_TEXT;
-      el.classList.remove("empty");
+  async function loadGoals() {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(GOAL_SHEET)}`;
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+      const rows = json.table.rows;
+
+      const goals = rows
+        .map(r => r.c[1]?.v ?? "")
+        .filter(v => v.toString().trim() !== "");
+
+      const el = document.getElementById("goalText");
+      if (goals.length) {
+        el.classList.remove("empty");
+        el.innerHTML = goals.map((g, i) =>
+          `<div style="margin-bottom:${i < goals.length-1 ? '6px' : '0'}">
+            <span style="opacity:0.7;font-size:0.85rem">0${i+1}</span>
+            <span style="margin-left:8px">${g}</span>
+          </div>`
+        ).join("");
+      } else {
+        el.classList.add("empty");
+        el.textContent = "설정된 목표가 없습니다";
+      }
+    } catch(e) {
+      // 목표 시트 없으면 그냥 빈칸
     }
   }
 
@@ -454,10 +475,10 @@
   }
 
   // 초기 실행
-  setGoal();
+  loadGoals();
   loadData();
   // 3분마다 자동 새로고침
-  setInterval(loadData, 180000);
+  setInterval(() => { loadGoals(); loadData(); }, 180000);
 </script>
 </body>
 </html>
