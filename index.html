@@ -258,6 +258,69 @@
       padding: 20px;
       font-size: 0.85rem;
     }
+
+    /* 팝업 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      width: 90%;
+      max-width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: popIn 0.2s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a202c;
+    }
+    .modal-close {
+      background: #edf2f7;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #718096;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover { background: #e2e8f0; }
+    .modal-empty {
+      text-align: center;
+      color: #a0aec0;
+      padding: 30px;
+      font-size: 0.9rem;
+    }
+    .bar-row { cursor: pointer; border-radius: 8px; padding: 4px; transition: background 0.15s; }
+    .bar-row:hover { background: #f7fafc; }
   </style>
 </head>
 <body>
@@ -276,6 +339,21 @@
   <div>
     <div class="goal-label">최우선 목표</div>
     <div class="goal-text empty" id="goalText">설정된 목표가 없습니다</div>
+  </div>
+</div>
+
+<!-- 팝업 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div id="modalDot" style="width:12px;height:12px;border-radius:50%;flex-shrink:0"></div>
+        <span id="modalTeamName"></span>
+        <span id="modalTeamCount" style="font-size:0.8rem;color:#a0aec0;font-weight:500"></span>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div id="modalTaskList"></div>
   </div>
 </div>
 
@@ -378,6 +456,7 @@
         memo:    r.c[6]?.v ?? "",
       })).filter(t => t.team);
 
+      allTasks = tasks;
       renderSummary(tasks);
       renderBarChart(tasks);
       renderTaskList(tasks);
@@ -410,7 +489,7 @@
       const overload = n >= 5;
       const color = TEAM_COLORS[team] || "#a0aec0";
       return `
-        <div class="bar-row">
+        <div class="bar-row" onclick="openTeamModal('${team}')" title="${team} 업무 보기">
           <div class="bar-label">${team}</div>
           <div class="bar-track">
             <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
@@ -472,6 +551,42 @@
         <div class="task-date">${dateStr}</div>
         <div class="task-status status-${t.status}">${t.status}</div>
       </div>`;
+  }
+
+  // ── 팝업 ──────────────────────────────────────────────────────
+  let allTasks = [];
+
+  function openTeamModal(team) {
+    const color = TEAM_COLORS[team] || "#a0aec0";
+    const tasks = allTasks.filter(t => t.team === team);
+    const active = tasks.filter(t => t.status === "진행중");
+    const done   = tasks.filter(t => t.status !== "진행중");
+
+    document.getElementById("modalDot").style.background = color;
+    document.getElementById("modalTeamName").textContent = team;
+    document.getElementById("modalTeamCount").textContent = `${active.length}건 진행중`;
+
+    let html = "";
+    if (!tasks.length) {
+      html = '<div class="modal-empty">등록된 업무가 없습니다</div>';
+    } else {
+      if (active.length) {
+        html += active.map(t => taskHTML(t)).join("");
+      }
+      if (done.length) {
+        html += `<div style="margin:16px 0 10px;font-size:0.78rem;font-weight:700;color:#a0aec0;letter-spacing:0.05em">완료 / 취소</div>`;
+        html += done.map(t => taskHTML(t)).join("");
+      }
+    }
+
+    document.getElementById("modalTaskList").innerHTML = html;
+    document.getElementById("modalOverlay").classList.add("open");
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById("modalOverlay")) {
+      document.getElementById("modalOverlay").classList.remove("open");
+    }
   }
 
   // 초기 실행
