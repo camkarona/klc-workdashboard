@@ -673,7 +673,8 @@
 
   // ── 데이터 로드 ──────────────────────────────────────────────
   async function fetchSheet(sheetName, hasHeader = false) {
-    const headerParam = hasHeader ? '&headers=1' : '';
+    // 헤더 있으면 headers=1 (첫 행 스킵), 없으면 headers=0 (모든 행을 데이터로)
+    const headerParam = hasHeader ? '&headers=1' : '&headers=0';
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json${headerParam}&sheet=${encodeURIComponent(sheetName)}`;
     const res  = await fetch(url);
     const text = await res.text();
