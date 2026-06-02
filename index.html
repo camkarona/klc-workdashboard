@@ -105,14 +105,28 @@
       font-size: 0.88rem;
     }
     .crm-table tr.crm-row td:first-child {
-      border-left: 1px solid #edf2f7;
       border-top-left-radius: 10px; border-bottom-left-radius: 10px;
+      border-left: 5px solid transparent;
     }
     .crm-table tr.crm-row td:last-child {
       border-right: 1px solid #edf2f7;
       border-top-right-radius: 10px; border-bottom-right-radius: 10px;
     }
-    .crm-table tr.crm-row:hover td { background: #f7fafc; }
+    .crm-table tr.crm-row:hover td { filter: brightness(0.97); }
+
+    /* 행 유형별 색상 (왼쪽 컬러바 + 은은한 배경 틴트) */
+    .crm-row.row-유학원       td:first-child { border-left-color: #4299e1; }
+    .crm-row.row-유학원       td { background: #f0f7ff; }
+    .crm-row.row-국제결혼회사 td:first-child { border-left-color: #ed64a6; }
+    .crm-row.row-국제결혼회사 td { background: #fff5f9; }
+    .crm-row.row-국제결혼신랑 td:first-child { border-left-color: #ed8936; }
+    .crm-row.row-국제결혼신랑 td { background: #fffaf2; }
+    .crm-row.row-개인학생     td:first-child { border-left-color: #48bb78; }
+    .crm-row.row-개인학생     td { background: #f3fbf6; }
+    .crm-row.row-기관         td:first-child { border-left-color: #9f7aea; }
+    .crm-row.row-기관         td { background: #faf5ff; }
+    .crm-row.row-기타         td:first-child { border-left-color: #a0aec0; }
+    .crm-row.row-기타         td { background: #fafbfc; }
 
     .crm-id { font-size: 0.78rem; color: #a0aec0; font-weight: 600; }
     .crm-name { font-weight: 700; color: #2d3748; }
@@ -512,7 +526,7 @@
         contact:   r.c[4]?.v ?? "",
         students:  r.c[5]?.v ?? "",
         memo:      r.c[6]?.v ?? "",
-      })).filter(c => c.name);
+      })).filter(c => c.name && c.name !== "고객명");  // 헤더 행 제외
       crmLoaded = true;
       renderCRMFilter();
       renderCRM();
@@ -558,11 +572,23 @@
     renderCRM();
   }
 
+  // 자유 입력값을 표준 카테고리로 매핑
+  const TYPE_ALIASES = {
+    "유학원": "유학원", "B2B": "유학원",
+    "국제결혼회사": "국제결혼회사", "국결회사": "국제결혼회사",
+    "국제결혼신랑": "국제결혼신랑", "신랑": "국제결혼신랑",
+    "개인학생": "개인학생", "개인": "개인학생", "학생": "개인학생",
+    "기관": "기관", "공장": "기관", "회사": "기관", "학교": "기관",
+    "기타": "기타",
+  };
   function normalizeType(t) {
-    // "기관 (회사/공장)" 같은 표기 들어와도 "기관"으로 분류
     const s = String(t || "").trim();
-    for (const known of CRM_TYPES) {
-      if (s.startsWith(known)) return known;
+    if (!s) return "기타";
+    // 정확히 매칭
+    if (TYPE_ALIASES[s]) return TYPE_ALIASES[s];
+    // 포함 검사 (앞쪽 우선)
+    for (const [alias, std] of Object.entries(TYPE_ALIASES)) {
+      if (s.includes(alias)) return std;
     }
     return "기타";
   }
@@ -586,7 +612,7 @@
     tbody.innerHTML = list.map((c, i) => {
       const type = normalizeType(c.type);
       const studentsShort = c.students ? String(c.students).slice(0, 40) + (String(c.students).length > 40 ? '…' : '') : '—';
-      return `<tr class="crm-row" onclick="openCrmModal(${crmCustomers.indexOf(c)})">
+      return `<tr class="crm-row row-${type}" onclick="openCrmModal(${crmCustomers.indexOf(c)})">
         <td class="crm-id">${c.id}</td>
         <td class="crm-name">${c.name}</td>
         <td><span class="crm-type-badge type-${type}">${c.type || '기타'}</span></td>
@@ -647,7 +673,7 @@
 
   // ── 데이터 로드 ──────────────────────────────────────────────
   async function fetchSheet(sheetName) {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(sheetName)}`;
     const res  = await fetch(url);
     const text = await res.text();
     return JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
