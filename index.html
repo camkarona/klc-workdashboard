@@ -26,6 +26,124 @@
     .header .subtitle { font-size: 0.85rem; color: #718096; margin-top: 2px; }
     .last-updated { font-size: 0.8rem; color: #a0aec0; text-align: right; }
 
+    /* 탭 네비게이션 */
+    .tabs {
+      display: flex; gap: 8px; margin-bottom: 20px;
+      background: white; padding: 6px; border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 10px 22px; border: none; background: transparent;
+      border-radius: 10px; font-size: 0.92rem; font-weight: 600;
+      color: #718096; cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn:hover { background: #f7fafc; color: #2d3748; }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(102,126,234,0.35);
+    }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    /* CRM 영역 */
+    .crm-controls {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 16px; align-items: center;
+    }
+    .crm-search {
+      flex: 1; min-width: 200px;
+      padding: 10px 16px; border: 1px solid #e2e8f0;
+      border-radius: 99px; font-size: 0.9rem;
+      transition: border 0.15s;
+    }
+    .crm-search:focus { outline: none; border-color: #667eea; }
+    .crm-filter {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .crm-filter-btn {
+      padding: 7px 14px; border: 1px solid #e2e8f0;
+      background: white; border-radius: 99px;
+      font-size: 0.82rem; font-weight: 600; color: #4a5568;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .crm-filter-btn:hover { background: #f7fafc; }
+    .crm-filter-btn.active {
+      background: #667eea; color: white; border-color: #667eea;
+    }
+
+    .crm-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px; margin-bottom: 18px;
+    }
+    .crm-stat {
+      background: #f7fafc; border-radius: 10px;
+      padding: 12px; text-align: center;
+    }
+    .crm-stat-num {
+      font-size: 1.4rem; font-weight: 800; color: #667eea;
+      line-height: 1; margin-bottom: 3px;
+    }
+    .crm-stat-lbl { font-size: 0.72rem; color: #718096; font-weight: 600; }
+
+    .crm-table {
+      width: 100%; border-collapse: separate; border-spacing: 0 6px;
+    }
+    .crm-table th {
+      text-align: left; font-size: 0.74rem; font-weight: 700;
+      color: #a0aec0; padding: 8px 12px;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .crm-table tr.crm-row {
+      cursor: pointer; transition: all 0.15s;
+    }
+    .crm-table tr.crm-row td {
+      background: white; padding: 14px 12px;
+      border-top: 1px solid #edf2f7;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 0.88rem;
+    }
+    .crm-table tr.crm-row td:first-child {
+      border-left: 1px solid #edf2f7;
+      border-top-left-radius: 10px; border-bottom-left-radius: 10px;
+    }
+    .crm-table tr.crm-row td:last-child {
+      border-right: 1px solid #edf2f7;
+      border-top-right-radius: 10px; border-bottom-right-radius: 10px;
+    }
+    .crm-table tr.crm-row:hover td { background: #f7fafc; }
+
+    .crm-id { font-size: 0.78rem; color: #a0aec0; font-weight: 600; }
+    .crm-name { font-weight: 700; color: #2d3748; }
+    .crm-type-badge {
+      font-size: 0.72rem; font-weight: 700;
+      border-radius: 99px; padding: 3px 10px;
+      display: inline-block;
+    }
+    .type-유학원       { background: #bee3f8; color: #2b6cb0; }
+    .type-국제결혼회사  { background: #fed7e2; color: #97266d; }
+    .type-국제결혼신랑  { background: #feebc8; color: #c05621; }
+    .type-개인학생     { background: #c6f6d5; color: #276749; }
+    .type-기관         { background: #e9d8fd; color: #553c9a; }
+    .type-기타         { background: #edf2f7; color: #4a5568; }
+
+    /* CRM 상세 모달 */
+    .crm-modal-row {
+      display: flex; padding: 12px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .crm-modal-row:last-child { border-bottom: none; }
+    .crm-modal-label {
+      width: 100px; font-size: 0.78rem; font-weight: 700;
+      color: #a0aec0; flex-shrink: 0;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .crm-modal-value {
+      flex: 1; font-size: 0.92rem; color: #2d3748;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
     /* 그리드 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
     @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
@@ -244,6 +362,15 @@
   </div>
 </div>
 
+<!-- 탭 네비게이션 -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('tasks')">📋 업무현황</button>
+  <button class="tab-btn" onclick="switchTab('crm')">👥 CRM 고객관리</button>
+</div>
+
+<!-- ═══════════════ 탭 1: 업무현황 ═══════════════ -->
+<section class="tab-section active" id="tab-tasks">
+
 <!-- 1행: 최우선 목표 + 전체 현황 요약 -->
 <div class="grid-2" style="margin-bottom:20px">
   <div class="goal-card">
@@ -293,10 +420,220 @@
   </div>
 </div>
 
+</section>
+<!-- ═══════════════ 탭 1 끝 ═══════════════ -->
+
+
+<!-- ═══════════════ 탭 2: CRM 고객관리 ═══════════════ -->
+<section class="tab-section" id="tab-crm">
+
+<div class="card">
+  <div class="card-title">👥 고객 / 거래처 관리</div>
+
+  <!-- 통계 -->
+  <div class="crm-stats" id="crmStats"></div>
+
+  <!-- 검색 + 필터 -->
+  <div class="crm-controls">
+    <input type="text" class="crm-search" id="crmSearch"
+           placeholder="🔍 고객명, 담당자, 연락처, 메모 검색..."
+           oninput="renderCRM()">
+  </div>
+  <div class="crm-filter" id="crmFilter"></div>
+
+  <!-- 고객 테이블 -->
+  <div style="margin-top:16px; overflow-x:auto">
+    <table class="crm-table" id="crmTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>고객명</th>
+          <th>유형</th>
+          <th>담당자</th>
+          <th>학생정보</th>
+        </tr>
+      </thead>
+      <tbody id="crmTbody">
+        <tr><td colspan="5" style="text-align:center; padding:30px; color:#a0aec0">불러오는 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</section>
+<!-- ═══════════════ 탭 2 끝 ═══════════════ -->
+
+
+<!-- CRM 상세 모달 -->
+<div class="modal-overlay" id="crmModalOverlay" onclick="closeCrmModal(event)">
+  <div class="modal" style="max-width: 600px">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span id="crmModalName"></span>
+        <span id="crmModalType"></span>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('crmModalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div id="crmModalBody"></div>
+  </div>
+</div>
+
+
 <script>
   const SHEET_ID   = "1RsdKEMc6XaiF6axx0zD7ZIaKla_AcI7niRPbn2XgBmg";
   const SHEET_NAME = "업무현황";
   const GOAL_SHEET = "목표";
+  const CRM_SHEET  = "CRM_고객";
+
+  // ── 탭 전환 ───────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (name === 'crm' && !crmLoaded) loadCRM();
+  }
+
+  // ── CRM 데이터 ───────────────────────────────────────────────
+  const CRM_TYPES = ["유학원", "국제결혼회사", "국제결혼신랑", "개인학생", "기관", "기타"];
+  let crmCustomers = [];
+  let crmFilter = "전체";
+  let crmLoaded = false;
+
+  async function loadCRM() {
+    try {
+      const json = await fetchSheet(CRM_SHEET);
+      const rows = json.table.rows;
+      crmCustomers = rows.map(r => ({
+        id:        r.c[0]?.v ?? "",
+        name:      r.c[1]?.v ?? "",
+        type:      r.c[2]?.v ?? "기타",
+        manager:   r.c[3]?.v ?? "",
+        contact:   r.c[4]?.v ?? "",
+        students:  r.c[5]?.v ?? "",
+        memo:      r.c[6]?.v ?? "",
+      })).filter(c => c.name);
+      crmLoaded = true;
+      renderCRMFilter();
+      renderCRM();
+    } catch(e) {
+      document.getElementById("crmTbody").innerHTML =
+        `<tr><td colspan="6" style="text-align:center; padding:30px; color:#e53e3e">
+        CRM_고객 시트를 불러올 수 없습니다.<br><small>${e.message}</small></td></tr>`;
+    }
+  }
+
+  function renderCRMFilter() {
+    const counts = {};
+    crmCustomers.forEach(c => {
+      const t = normalizeType(c.type);
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    const filterEl = document.getElementById("crmFilter");
+    const buttons = [["전체", crmCustomers.length], ...CRM_TYPES.map(t => [t, counts[t]||0])];
+    filterEl.innerHTML = buttons.map(([t, n]) => `
+      <button class="crm-filter-btn${t === crmFilter ? ' active' : ''}"
+              onclick="setCrmFilter('${t}')">${t} ${n ? `<span style="opacity:0.7">${n}</span>` : ''}</button>
+    `).join("");
+
+    // 통계
+    document.getElementById("crmStats").innerHTML = `
+      <div class="crm-stat">
+        <div class="crm-stat-num">${crmCustomers.length}</div>
+        <div class="crm-stat-lbl">전체 고객</div>
+      </div>
+      ${CRM_TYPES.filter(t => counts[t]).map(t => `
+        <div class="crm-stat">
+          <div class="crm-stat-num">${counts[t]}</div>
+          <div class="crm-stat-lbl">${t}</div>
+        </div>`).join("")}
+    `;
+  }
+
+  function setCrmFilter(t) {
+    crmFilter = t;
+    document.querySelectorAll('.crm-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent.trim().startsWith(t));
+    });
+    renderCRM();
+  }
+
+  function normalizeType(t) {
+    // "기관 (회사/공장)" 같은 표기 들어와도 "기관"으로 분류
+    const s = String(t || "").trim();
+    for (const known of CRM_TYPES) {
+      if (s.startsWith(known)) return known;
+    }
+    return "기타";
+  }
+
+  function renderCRM() {
+    const q = document.getElementById("crmSearch").value.toLowerCase().trim();
+    let list = crmCustomers;
+    if (crmFilter !== "전체") list = list.filter(c => normalizeType(c.type) === crmFilter);
+    if (q) list = list.filter(c =>
+      [c.name, c.manager, c.contact, c.students, c.memo, c.id]
+        .some(v => String(v).toLowerCase().includes(q))
+    );
+
+    const tbody = document.getElementById("crmTbody");
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#a0aec0">
+        ${crmCustomers.length ? '검색 결과가 없습니다' : '등록된 고객이 없습니다'}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map((c, i) => {
+      const type = normalizeType(c.type);
+      const studentsShort = c.students ? String(c.students).slice(0, 40) + (String(c.students).length > 40 ? '…' : '') : '—';
+      return `<tr class="crm-row" onclick="openCrmModal(${crmCustomers.indexOf(c)})">
+        <td class="crm-id">${c.id}</td>
+        <td class="crm-name">${c.name}</td>
+        <td><span class="crm-type-badge type-${type}">${c.type || '기타'}</span></td>
+        <td>${c.manager || '—'}</td>
+        <td style="color:#4a5568; font-size:0.85rem">${studentsShort}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  function openCrmModal(idx) {
+    const c = crmCustomers[idx];
+    if (!c) return;
+    const type = normalizeType(c.type);
+    document.getElementById("crmModalName").textContent = c.name;
+    document.getElementById("crmModalType").innerHTML =
+      `<span class="crm-type-badge type-${type}" style="font-size:0.75rem">${c.type || '기타'}</span>`;
+
+    document.getElementById("crmModalBody").innerHTML = `
+      <div class="crm-modal-row">
+        <div class="crm-modal-label">ID</div>
+        <div class="crm-modal-value">${c.id}</div>
+      </div>
+      <div class="crm-modal-row">
+        <div class="crm-modal-label">담당자</div>
+        <div class="crm-modal-value">${c.manager || '—'}</div>
+      </div>
+      <div class="crm-modal-row">
+        <div class="crm-modal-label">연락처</div>
+        <div class="crm-modal-value">${c.contact || '—'}</div>
+      </div>
+      <div class="crm-modal-row">
+        <div class="crm-modal-label">학생정보</div>
+        <div class="crm-modal-value" style="font-weight:600">${c.students || '—'}</div>
+      </div>
+      <div class="crm-modal-row" style="background:#fffbeb; border-radius:10px; padding:14px; margin-top:6px">
+        <div class="crm-modal-label">📝 메모</div>
+        <div class="crm-modal-value" style="font-size:0.95rem; line-height:1.6">${c.memo || '—'}</div>
+      </div>
+    `;
+
+    document.getElementById("crmModalOverlay").classList.add("open");
+  }
+
+  function closeCrmModal(e) {
+    if (e.target === document.getElementById("crmModalOverlay"))
+      document.getElementById("crmModalOverlay").classList.remove("open");
+  }
 
   const TEAM_COLORS = {
     "총무":     "#4299e1", "상담":     "#48bb78",
@@ -318,7 +655,9 @@
 
   async function loadAll() {
     try {
-      await Promise.all([loadGoals(), loadTasks()]);
+      const jobs = [loadGoals(), loadTasks()];
+      if (crmLoaded) jobs.push(loadCRM());
+      await Promise.all(jobs);
       document.getElementById("lastUpdated").textContent =
         "업데이트: " + new Date().toLocaleTimeString('ko-KR');
     } catch(e) { console.error(e); }
@@ -437,10 +776,29 @@
   }
 
   // ── 팝업 ────────────────────────────────────────────────────
+  // 날짜 파싱 헬퍼 — gviz는 Date 객체 또는 문자열로 반환
+  function parseTaskDate(v) {
+    if (!v) return null;
+    if (v instanceof Date) return v;
+    const s = String(v);
+    // gviz 형식: "Date(2026,4,25,14,30,0)" 또는 "2026-05-25 14:30"
+    const m1 = s.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+))?/);
+    if (m1) return new Date(+m1[1], +m1[2], +m1[3], +(m1[4]||0), +(m1[5]||0));
+    const m2 = s.match(/(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+    if (m2) return new Date(+m2[1], +m2[2]-1, +m2[3], +(m2[4]||0), +(m2[5]||0));
+    return null;
+  }
+  function isWithinDays(v, days) {
+    const d = parseTaskDate(v);
+    if (!d) return true; // 날짜 모르면 일단 보여줌
+    return (Date.now() - d.getTime()) <= days * 86400000;
+  }
+
   function openTeamModal(team) {
     const color  = TEAM_COLORS[team] || "#a0aec0";
     const active = allTasks.filter(t => t.team === team && t.status === "진행중");
-    const done   = allTasks.filter(t => t.team === team && t.status !== "진행중");
+    const done   = allTasks.filter(t => t.team === team && t.status !== "진행중"
+                                       && isWithinDays(t.doneAt || t.date, 7));
     document.getElementById("modalDot").style.background = color;
     document.getElementById("modalTeamName").textContent = team;
     document.getElementById("modalTeamCount").textContent = `${active.length}건 진행중`;
