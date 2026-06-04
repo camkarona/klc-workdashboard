@@ -778,16 +778,18 @@
   }
 
   function renderDoneCancel() {
-    const done   = allTasks.filter(t => t.status === "완료").reverse();
-    const cancel = allTasks.filter(t => t.status === "취소").reverse();
+    const done   = allTasks.filter(t => t.status === "완료"
+                                       && isWithinDays(t.doneAt || t.date, 7)).reverse();
+    const cancel = allTasks.filter(t => t.status === "취소"
+                                       && isWithinDays(t.doneAt || t.date, 7)).reverse();
 
     document.getElementById("doneList").innerHTML = done.length
       ? done.map(t => closedTaskHTML(t)).join("")
-      : '<div class="empty-msg">완료된 업무가 없습니다</div>';
+      : '<div class="empty-msg">최근 7일 내 완료 업무가 없습니다</div>';
 
     document.getElementById("cancelList").innerHTML = cancel.length
       ? cancel.map(t => closedTaskHTML(t)).join("")
-      : '<div class="empty-msg">취소된 업무가 없습니다</div>';
+      : '<div class="empty-msg">최근 7일 내 취소 업무가 없습니다</div>';
   }
 
   function closedTaskHTML(t) {
