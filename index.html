@@ -380,6 +380,7 @@
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('tasks')">📋 업무현황</button>
   <button class="tab-btn" onclick="switchTab('crm')">👥 CRM 고객관리</button>
+  <button class="tab-btn" onclick="switchTab('iou')">💰 IOU</button>
 </div>
 
 <!-- ═══════════════ 탭 1: 업무현황 ═══════════════ -->
@@ -478,6 +479,33 @@
 <!-- ═══════════════ 탭 2 끝 ═══════════════ -->
 
 
+<!-- ═══════════════ 탭 3: IOU ═══════════════ -->
+<section class="tab-section" id="tab-iou">
+
+<!-- 상단: 합산 카드 -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="goal-card" style="background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%); box-shadow: 0 4px 20px rgba(237,137,54,0.3);">
+    <div class="goal-label">💰 전체 합계 / 원장 사비 출자</div>
+    <div style="font-size:2.5rem; font-weight:800; line-height:1; margin-top:8px" id="iouTotal">$0</div>
+    <div style="font-size:0.85rem; opacity:0.85; margin-top:8px" id="iouCount">0건 기록</div>
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;justify-content:center">
+    <div class="card-title">📅 이번달 합계</div>
+    <div style="font-size:2.2rem; font-weight:800; color:#ed8936; line-height:1" id="iouMonthly">$0</div>
+    <div style="font-size:0.8rem; color:#a0aec0; margin-top:6px" id="iouMonthlyCount">0건</div>
+  </div>
+</div>
+
+<!-- IOU 목록 -->
+<div class="card">
+  <div class="card-title">💼 채권 내역 (최신순)</div>
+  <div id="iouList"><div class="loading">불러오는 중...</div></div>
+</div>
+
+</section>
+<!-- ═══════════════ 탭 3 끝 ═══════════════ -->
+
+
 <!-- CRM 상세 모달 -->
 <div class="modal-overlay" id="crmModalOverlay" onclick="closeCrmModal(event)">
   <div class="modal" style="max-width: 600px">
@@ -498,6 +526,7 @@
   const SHEET_NAME = "업무현황";
   const GOAL_SHEET = "목표";
   const CRM_SHEET  = "CRM_고객";
+  const IOU_SHEET  = "IOU";
 
   // ── 탭 전환 ───────────────────────────────────────────────────
   function switchTab(name) {
@@ -506,6 +535,68 @@
     document.getElementById('tab-' + name).classList.add('active');
     event.currentTarget.classList.add('active');
     if (name === 'crm' && !crmLoaded) loadCRM();
+    if (name === 'iou' && !iouLoaded) loadIOU();
+  }
+
+  // ── IOU 데이터 ───────────────────────────────────────────────
+  let iouEntries = [];
+  let iouLoaded = false;
+
+  async function loadIOU() {
+    try {
+      const json = await fetchSheet(IOU_SHEET, true);
+      const rows = json.table.rows;
+      iouEntries = rows.map(r => ({
+        id:     r.c[0]?.v ?? "",
+        date:   r.c[1]?.v ?? "",
+        memo:   r.c[2]?.v ?? "",
+        amount: parseFloat(r.c[3]?.v) || 0,
+      })).filter(e => e.id && e.id !== "IOU_ID");
+      iouLoaded = true;
+      renderIOU();
+    } catch(e) {
+      document.getElementById("iouList").innerHTML =
+        `<div class="error-msg" style="text-align:center; padding:30px; color:#e53e3e">
+        IOU 시트를 불러올 수 없습니다.<br><small>${e.message}</small></div>`;
+    }
+  }
+
+  function renderIOU() {
+    // 전체 합계
+    const total = iouEntries.reduce((sum, e) => sum + e.amount, 0);
+    document.getElementById("iouTotal").textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById("iouCount").textContent = `${iouEntries.length}건 기록`;
+
+    // 이번달
+    const thisMonth = new Date().toISOString().slice(0,7); // YYYY-MM
+    const monthly = iouEntries.filter(e => {
+      const d = parseTaskDate(e.date);
+      if (!d) return false;
+      const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      return ym === thisMonth;
+    });
+    const monthSum = monthly.reduce((sum, e) => sum + e.amount, 0);
+    document.getElementById("iouMonthly").textContent = `$${monthSum.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById("iouMonthlyCount").textContent = `${monthly.length}건`;
+
+    // 목록 (최신순)
+    const list = [...iouEntries].reverse();
+    const el = document.getElementById("iouList");
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-msg" style="text-align:center; padding:30px; color:#cbd5e0">기록된 IOU가 없습니다</div>';
+      return;
+    }
+    el.innerHTML = list.map(e => {
+      const dateStr = e.date ? String(e.date).slice(0,16) : "";
+      return `<div class="log-item" style="border-left: 4px solid #ed8936">
+        <div class="log-id" style="width:80px">${e.id}</div>
+        <div class="log-body">
+          <div class="log-content">${e.memo}</div>
+          <div class="log-time" style="text-align:left; margin-top:2px">${dateStr.slice(0,10)}</div>
+        </div>
+        <div style="font-size:1.1rem; font-weight:800; color:#ed8936">$${e.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+      </div>`;
+    }).join("");
   }
 
   // ── CRM 데이터 ───────────────────────────────────────────────
@@ -685,6 +776,7 @@
     try {
       const jobs = [loadGoals(), loadTasks()];
       if (crmLoaded) jobs.push(loadCRM());
+      if (iouLoaded) jobs.push(loadIOU());
       await Promise.all(jobs);
       document.getElementById("lastUpdated").textContent =
         "업데이트: " + new Date().toLocaleTimeString('ko-KR');
