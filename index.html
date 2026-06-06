@@ -381,6 +381,7 @@
   <button class="tab-btn active" onclick="switchTab('tasks')">📋 업무현황</button>
   <button class="tab-btn" onclick="switchTab('crm')">👥 CRM 고객관리</button>
   <button class="tab-btn" onclick="switchTab('iou')">💰 IOU</button>
+  <button class="tab-btn" onclick="switchTab('inc')">💵 직수입</button>
 </div>
 
 <!-- ═══════════════ 탭 1: 업무현황 ═══════════════ -->
@@ -506,6 +507,34 @@
 <!-- ═══════════════ 탭 3 끝 ═══════════════ -->
 
 
+<!-- ═══════════════ 탭 4: 원장 직수입 ═══════════════ -->
+<section class="tab-section" id="tab-inc">
+
+<!-- 상단: 합산 카드 -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="goal-card" style="background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%); box-shadow: 0 4px 20px rgba(72,187,120,0.3);">
+    <div class="goal-label">💵 누적 수입 / 원장 직수입</div>
+    <div style="font-size:2.5rem; font-weight:800; line-height:1; margin-top:8px" id="incTotal">$0</div>
+    <div style="font-size:0.85rem; opacity:0.85; margin-top:8px" id="incCount">0건 기록</div>
+    <div style="font-size:0.75rem; opacity:0.7; margin-top:10px; font-style:italic">KLC 장부와 무관 (개인 사업 수입)</div>
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;justify-content:center">
+    <div class="card-title">📅 이번달 수입</div>
+    <div style="font-size:2.2rem; font-weight:800; color:#2f855a; line-height:1" id="incMonthly">$0</div>
+    <div style="font-size:0.8rem; color:#a0aec0; margin-top:6px" id="incMonthlyCount">0건</div>
+  </div>
+</div>
+
+<!-- 수입 목록 -->
+<div class="card">
+  <div class="card-title">🎉 수입 내역 (최신순)</div>
+  <div id="incList"><div class="loading">불러오는 중...</div></div>
+</div>
+
+</section>
+<!-- ═══════════════ 탭 4 끝 ═══════════════ -->
+
+
 <!-- CRM 상세 모달 -->
 <div class="modal-overlay" id="crmModalOverlay" onclick="closeCrmModal(event)">
   <div class="modal" style="max-width: 600px">
@@ -527,6 +556,7 @@
   const GOAL_SHEET = "목표";
   const CRM_SHEET  = "CRM_고객";
   const IOU_SHEET  = "IOU";
+  const INC_SHEET  = "원장직수입";
 
   // ── 탭 전환 ───────────────────────────────────────────────────
   function switchTab(name) {
@@ -536,6 +566,65 @@
     event.currentTarget.classList.add('active');
     if (name === 'crm' && !crmLoaded) loadCRM();
     if (name === 'iou' && !iouLoaded) loadIOU();
+    if (name === 'inc' && !incLoaded) loadINC();
+  }
+
+  // ── 원장 직수입 데이터 ──────────────────────────────────────
+  let incEntries = [];
+  let incLoaded = false;
+
+  async function loadINC() {
+    try {
+      const json = await fetchSheet(INC_SHEET, true);
+      const rows = json.table.rows;
+      incEntries = rows.map(r => ({
+        id:     r.c[0]?.v ?? "",
+        date:   r.c[1]?.v ?? "",
+        memo:   r.c[2]?.v ?? "",
+        amount: parseFloat(r.c[3]?.v) || 0,
+      })).filter(e => e.id && e.id !== "INC_ID");
+      incLoaded = true;
+      renderINC();
+    } catch(e) {
+      document.getElementById("incList").innerHTML =
+        `<div class="error-msg" style="text-align:center; padding:30px; color:#e53e3e">
+        원장직수입 시트를 불러올 수 없습니다.<br><small>${e.message}</small></div>`;
+    }
+  }
+
+  function renderINC() {
+    const total = incEntries.reduce((sum, e) => sum + e.amount, 0);
+    document.getElementById("incTotal").textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById("incCount").textContent = `${incEntries.length}건 기록`;
+
+    const thisMonth = new Date().toISOString().slice(0,7);
+    const monthly = incEntries.filter(e => {
+      const d = parseTaskDate(e.date);
+      if (!d) return false;
+      const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      return ym === thisMonth;
+    });
+    const monthSum = monthly.reduce((sum, e) => sum + e.amount, 0);
+    document.getElementById("incMonthly").textContent = `$${monthSum.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById("incMonthlyCount").textContent = `${monthly.length}건`;
+
+    const list = [...incEntries].reverse();
+    const el = document.getElementById("incList");
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-msg" style="text-align:center; padding:30px; color:#cbd5e0">기록된 수입이 없습니다</div>';
+      return;
+    }
+    el.innerHTML = list.map(e => {
+      const dateStr = e.date ? String(e.date).slice(0,16) : "";
+      return `<div class="log-item" style="border-left: 4px solid #48bb78">
+        <div class="log-id" style="width:80px">${e.id}</div>
+        <div class="log-body">
+          <div class="log-content">${e.memo}</div>
+          <div class="log-time" style="text-align:left; margin-top:2px">${dateStr.slice(0,10)}</div>
+        </div>
+        <div style="font-size:1.1rem; font-weight:800; color:#2f855a">+$${e.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+      </div>`;
+    }).join("");
   }
 
   // ── IOU 데이터 ───────────────────────────────────────────────
@@ -777,6 +866,7 @@
       const jobs = [loadGoals(), loadTasks()];
       if (crmLoaded) jobs.push(loadCRM());
       if (iouLoaded) jobs.push(loadIOU());
+      if (incLoaded) jobs.push(loadINC());
       await Promise.all(jobs);
       document.getElementById("lastUpdated").textContent =
         "업데이트: " + new Date().toLocaleTimeString('ko-KR');
